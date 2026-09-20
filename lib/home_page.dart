@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:notes/auth_service.dart';
@@ -54,6 +55,9 @@ class HomePage extends StatelessWidget {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               var item = docs[index];
+              final data = item.data() as Map<String, dynamic>;
+              final imageUrl = data['image_url'];
+
               return Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(
@@ -65,15 +69,26 @@ class HomePage extends StatelessWidget {
                     horizontal: 16,
                     vertical: 8,
                   ),
+                  leading: imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ), // Image.network
+                        ) // ClipRRect
+                      : null,
                   title: Text(
-                    item['name'],
+                    data['name'] ?? '',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ), // Text
                   subtitle: Text(
-                    "Quantity ${item['quantity']}",
+                    "Quantity ${data['quantity'] ?? 0}",
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ), // Text
                   trailing: Row(
@@ -113,6 +128,10 @@ class HomePage extends StatelessWidget {
               Navigator.pop(context);
             },
           ), // TextButton
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ), // TextButton
         ],
       ), // AlertDialog
     );
@@ -123,56 +142,93 @@ class HomePage extends StatelessWidget {
     nameCtrl.clear();
     qtyCtrl.clear();
 
+    File? selectedImageFile;
+    String? selectedImageUrl;
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add item"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: InputDecoration(
-                labelText: "Name",
-                border: OutlineInputBorder(
+      builder: (_) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text("Add item"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: "Name",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ), // InputDecoration
+              ), // TextField
+              const SizedBox(height: 12),
+              TextField(
+                controller: qtyCtrl,
+                decoration: InputDecoration(
+                  labelText: "Quantity",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ), // InputDecoration
+                keyboardType: TextInputType.number,
+              ), // TextField
+              const SizedBox(height: 10),
+              if (selectedImageFile != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    selectedImageFile!,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ), // Image.file
+                ), // ClipRRect
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.upload_file),
+                label: const Text("Upload image"),
+                onPressed: () async {
+                  final pickedFile = await service.pickImageForAddItem();
+                  if (pickedFile != null) {
+                    setState(() {
+                      selectedImageFile = pickedFile.file;
+                      selectedImageUrl = pickedFile.url;
+                    });
+                  }
+                },
+              ), // ElevatedButton.icon
+            ],
+          ), // Column
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ), // TextButton
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-              ), // InputDecoration
-            ), // TextField
-            const SizedBox(height: 12),
-            TextField(
-              controller: qtyCtrl,
-              decoration: InputDecoration(
-                labelText: "Quantity",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ), // InputDecoration
-            ), // TextField
-          ],
-        ), // Column
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context),
-          ), // TextButton
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            child: const Text("Save"),
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty && qtyCtrl.text.isNotEmpty) {
-                service.addItem(nameCtrl.text, int.parse(qtyCtrl.text));
-                Navigator.pop(context);
-              }
-            },
-          ), // ElevatedButton
-        ],
-      ), // AlertDialog
+              child: const Text("Save"),
+              onPressed: () async {
+                if (nameCtrl.text.isNotEmpty && qtyCtrl.text.isNotEmpty) {
+                  await service.addItemWithImage(
+                    nameCtrl.text,
+                    int.parse(qtyCtrl.text),
+                    selectedImageUrl,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
+                }
+              },
+            ), // ElevatedButton
+          ],
+        ), // AlertDialog
+      ), // StatefulBuilder
     );
   }
 
