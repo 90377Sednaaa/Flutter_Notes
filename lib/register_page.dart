@@ -55,14 +55,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     passwordCtrl.text,
                   );
 
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   setState(() => loading = false);
 
                   if (user != null) {
                     // Send verification email
                     if (!user.emailVerified) {
                       await user.sendEmailVerification();
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -71,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ), // SnackBar
                       );
                     }
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (_) => LoginPage()),

@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                     final success = await auth.sendPasswordResetEmail(
                       emailCtrl.text.trim(),
                     );
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                     emailCtrl.text,
                     passwordCtrl.text,
                   );
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   setState(() => loading = false);
 
                   if (user != null) {
@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   setState(() => loading = true);
                   final user = await auth.signInWithGoogle();
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   setState(() => loading = false);
                   if (user != null) {
                     Navigator.pushReplacement(
