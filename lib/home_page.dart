@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:notes/auth_service.dart';
+import 'package:notes/login_page.dart';
 
 import 'crud_service.dart';
 
@@ -17,6 +19,18 @@ class HomePage extends StatelessWidget {
         title: const Text('Firebase Murillo'),
         centerTitle: true,
         backgroundColor: Colors.teal,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              AuthService().signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => LoginPage()),
+              );
+            },
+          ), // IconButton
+        ],
       ), // AppBar
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.teal,
