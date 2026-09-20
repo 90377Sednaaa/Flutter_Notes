@@ -14,7 +14,7 @@ class CrudService {
       FirebaseFirestore.instance.collection('items');
 
   final CloudinaryPublic _cloudinary = CloudinaryPublic(
-    'docgppct3',
+    't3wclws5',
     'flutter_notes_preset',
     cache: false,
   );
