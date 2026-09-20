@@ -43,7 +43,35 @@ class _LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(),
                 ), // InputDecoration
               ), // TextField
-              SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  child: Text("Forgot Password?"),
+                  onPressed: () async {
+                    if (emailCtrl.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Please enter your email first"),
+                        ),
+                      );
+                      return;
+                    }
+                    final success = await auth.sendPasswordResetEmail(
+                      emailCtrl.text.trim(),
+                    );
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? "Password reset email sent! Check your inbox."
+                              : "Failed to send reset email. Verify your email.",
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               ElevatedButton(
                 child: loading
                     ? CircularProgressIndicator(color: Colors.white)

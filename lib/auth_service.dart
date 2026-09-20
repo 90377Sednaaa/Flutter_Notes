@@ -54,6 +54,17 @@ class AuthService {
     }
   }
 
+  // PASSWORD RESET
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (e) {
+      print("Password reset error: $e");
+      return false;
+    }
+  }
+
   // SIGN OUT
   Future<void> signOut() async {
     if (!kIsWeb) {
